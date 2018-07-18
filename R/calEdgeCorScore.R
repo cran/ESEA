@@ -1,4 +1,4 @@
-calEdgeCorScore <- function(dataset, class.labels,controlcharactor, edgesbackgrand) {
+calEdgeCorScore <- function(dataset, class.labels,controlcharactor, edgesbackgrand, k=3, k_iter_max=10) {
 #This function calculate differential Mutual information
 #Inputs:
 #     dataset: Marix of gene expression values (rownames are genes, columnnames are samples) 
@@ -19,7 +19,15 @@ calEdgeCorScore <- function(dataset, class.labels,controlcharactor, edgesbackgra
 	   Cexpress.2<-dataset[location[,2],controlloca]
 	   EdgeCorScore<-c()
 	   for(i in 1:length(location[,1])){
-		   EdgeCorScore[i]<-knnmi(dataset.1[i,],dataset.2[i,])-knnmi(Cexpress.1[i,],Cexpress.2[i,])
+	   		dataset_1_dis = arules::discretize(x=as.numeric(dataset.1[i,]), method="cluster", centers=k,iter.max=k_iter_max)
+			dataset_2_dis = arules::discretize(x=as.numeric(dataset.2[i,]), method="cluster", centers=k,iter.max=k_iter_max)
+			dataset_MI = infotheo::mutinformation(dataset_1_dis,dataset_2_dis)
+
+			Cexpress_1_dis = arules::discretize(x=as.numeric(Cexpress.1[i,]), method="cluster", centers=k,iter.max=k_iter_max)
+			Cexpress_2_dis = arules::discretize(x=as.numeric(Cexpress.2[i,]), method="cluster", centers=k,iter.max=k_iter_max)
+			Cexpress_MI = infotheo::mutinformation(Cexpress_1_dis,Cexpress_2_dis)
+
+		   	EdgeCorScore[i]<-dataset_MI-Cexpress_MI
 		  }   
 		EdgeID<-matrix(0,length(location[,1]),2)
 		EdgeID[,1]<-row.names(dataset.1)
